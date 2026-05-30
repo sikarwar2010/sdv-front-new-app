@@ -116,7 +116,7 @@ export default function MastersPage() {
                 </TableHeader>
                 <TableBody>
                   {rows.map((r: any) => (
-                    <TableRow key={r._id}>
+                    <TableRow key={r._id ?? r.value}>
                       <TableCell className="tabular-nums text-muted-foreground">{r.position}</TableCell>
                       <TableCell className="font-medium">{r.label}</TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">{r.value}</TableCell>
@@ -133,7 +133,13 @@ export default function MastersPage() {
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing({ ...r })}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => remove(r)}>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7"
+                            disabled={!r._id}
+                            onClick={() => remove(r)}
+                          >
                             <Trash2 className="h-3.5 w-3.5 text-destructive" />
                           </Button>
                         </div>

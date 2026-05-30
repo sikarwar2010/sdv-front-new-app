@@ -16,19 +16,19 @@
 
 export {
   OWNERSHIP_TYPES,
-  PROPERTY_USE_SUBCATEGORIES,
   PROPERTY_USES,
   PROPERTY_USES_REQUIRING_SUBCATEGORY,
+  PROPERTY_USE_SUBCATEGORIES,
   ROAD_TYPES,
   SITUATIONS,
   TAX_RATE_ZONES,
 } from "@/convex/taxationMasters";
 
-export { SANITATION_TYPE_VALUES, SANITATION_TYPES, WATER_SOURCE_VALUES, WATER_SOURCES } from "@/convex/serviceMasters";
+export { SANITATION_TYPES, SANITATION_TYPE_VALUES, WATER_SOURCES, WATER_SOURCE_VALUES } from "@/convex/serviceMasters";
 
 export { CONSTRUCTION_TYPES, FLOOR_NAMES, FLOOR_USAGE_FACTORS, FLOOR_USAGE_TYPES } from "@/convex/areaMasters";
 
-export { MAX_SURVEY_OWNERS, RESPONDENT_RELATIONSHIP_VALUES, RESPONDENT_RELATIONSHIPS } from "@/convex/ownerConstants";
+export { MAX_SURVEY_OWNERS, RESPONDENT_RELATIONSHIPS, RESPONDENT_RELATIONSHIP_VALUES } from "@/convex/ownerConstants";
 
 export {
   GPS_ACCEPT_MAX_ACCURACY_METERS,
@@ -70,7 +70,7 @@ export const USER_STATUS_LABEL: Record<UserStatus, string> = {
 export const MASTER_CATEGORIES = [
   "assessment_year",
   "ownership_type",
-  "property_type",
+  "property_use_subcategory",
   "property_use",
   "situation",
   "road_type",
@@ -81,7 +81,7 @@ export type MasterCategory = (typeof MASTER_CATEGORIES)[number];
 export const MASTER_CATEGORY_LABELS: Record<MasterCategory, string> = {
   assessment_year: "Assessment Year",
   ownership_type: "Ownership Type",
-  property_type: "Property Type",
+  property_use_subcategory: "Property Type",
   property_use: "Property Use",
   situation: "Situation",
   road_type: "Road Type",
