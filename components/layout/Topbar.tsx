@@ -13,7 +13,7 @@ import {
   useMarkRead,
   useNotifications,
   useUnreadCount,
-} from "@/features/masters/hooks/useNotifications";
+} from "@/hooks/masters/useNotifications";
 import { useCurrentUser } from "@/lib/session";
 import { fmtDate } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";

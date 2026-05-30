@@ -1,19 +1,38 @@
 "use client";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ReactNode } from "react";
 import {
-  ResponsiveContainer,
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  Cell,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+const CHART_HEIGHT_PX = 288;
+
+/** Avoid Recharts measuring -1 before the grid/flex parent has layout. */
+function ChartViewport({ children }: { children: ReactNode }) {
+  return (
+    <div className="h-72 w-full min-w-0">
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        minWidth={0}
+        initialDimension={{ width: 320, height: CHART_HEIGHT_PX }}
+      >
+        {children}
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 const COLORS = {
   navy: "hsl(215 60% 32%)",
@@ -40,51 +59,49 @@ export function TrendChart({
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data ?? []} margin={{ left: -16, right: 8, top: 4 }}>
-              <defs>
-                <linearGradient id="gCreated" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={COLORS.navy} stopOpacity={0.35} />
-                  <stop offset="100%" stopColor={COLORS.navy} stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gApproved" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={COLORS.green} stopOpacity={0.35} />
-                  <stop offset="100%" stopColor={COLORS.green} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 16% 92%)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(d) => String(d).slice(5)} minTickGap={24} />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={36} />
-              <Tooltip {...tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area
-                type="monotone"
-                dataKey="created"
-                name="Created"
-                stroke={COLORS.navy}
-                fill="url(#gCreated)"
-                strokeWidth={2}
-              />
-              <Area
-                type="monotone"
-                dataKey="approved"
-                name="Approved"
-                stroke={COLORS.green}
-                fill="url(#gApproved)"
-                strokeWidth={2}
-              />
-              <Area
-                type="monotone"
-                dataKey="rejected"
-                name="Rejected"
-                stroke={COLORS.red}
-                fillOpacity={0}
-                strokeWidth={1.5}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        <ChartViewport>
+          <AreaChart data={data ?? []} margin={{ left: -16, right: 8, top: 4 }}>
+            <defs>
+              <linearGradient id="gCreated" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.navy} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={COLORS.navy} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="gApproved" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.green} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={COLORS.green} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 16% 92%)" vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(d) => String(d).slice(5)} minTickGap={24} />
+            <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={36} />
+            <Tooltip {...tooltipStyle} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Area
+              type="monotone"
+              dataKey="created"
+              name="Created"
+              stroke={COLORS.navy}
+              fill="url(#gCreated)"
+              strokeWidth={2}
+            />
+            <Area
+              type="monotone"
+              dataKey="approved"
+              name="Approved"
+              stroke={COLORS.green}
+              fill="url(#gApproved)"
+              strokeWidth={2}
+            />
+            <Area
+              type="monotone"
+              dataKey="rejected"
+              name="Rejected"
+              stroke={COLORS.red}
+              fillOpacity={0}
+              strokeWidth={1.5}
+            />
+          </AreaChart>
+        </ChartViewport>
       </CardContent>
     </Card>
   );
@@ -103,20 +120,18 @@ export function SurveyorProductivityChart({
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={(data ?? []).slice(0, 10)} margin={{ left: -16, right: 8, top: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 16% 92%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={60} />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={36} />
-              <Tooltip {...tooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="approved" name="Approved" stackId="a" fill={COLORS.green} radius={[0, 0, 0, 0]} />
-              <Bar dataKey="submitted" name="Submitted" stackId="a" fill={COLORS.navy} />
-              <Bar dataKey="drafts" name="Drafts" stackId="a" fill={COLORS.slate} radius={[3, 3, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <ChartViewport>
+          <BarChart data={(data ?? []).slice(0, 10)} margin={{ left: -16, right: 8, top: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 16% 92%)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={60} />
+            <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={36} />
+            <Tooltip {...tooltipStyle} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Bar dataKey="approved" name="Approved" stackId="a" fill={COLORS.green} radius={[0, 0, 0, 0]} />
+            <Bar dataKey="submitted" name="Submitted" stackId="a" fill={COLORS.navy} />
+            <Bar dataKey="drafts" name="Drafts" stackId="a" fill={COLORS.slate} radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ChartViewport>
       </CardContent>
     </Card>
   );
@@ -135,24 +150,22 @@ export function CoverageChart({
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={(data ?? []).slice(0, 12)} layout="vertical" margin={{ left: 8, right: 16 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 16% 92%)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={90} />
-              <Tooltip {...tooltipStyle} />
-              <Bar dataKey="total" name="Surveys" radius={[0, 4, 4, 0]}>
-                {(data ?? []).slice(0, 12).map((d, i) => (
-                  <Cell
-                    key={i}
-                    fill={d.approvalRate >= 60 ? COLORS.green : d.approvalRate >= 30 ? COLORS.amber : COLORS.slate}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <ChartViewport>
+          <BarChart data={(data ?? []).slice(0, 12)} layout="vertical" margin={{ left: 8, right: 16 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(215 16% 92%)" horizontal={false} />
+            <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
+            <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={90} />
+            <Tooltip {...tooltipStyle} />
+            <Bar dataKey="total" name="Surveys" radius={[0, 4, 4, 0]}>
+              {(data ?? []).slice(0, 12).map((d, i) => (
+                <Cell
+                  key={i}
+                  fill={d.approvalRate >= 60 ? COLORS.green : d.approvalRate >= 30 ? COLORS.amber : COLORS.slate}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ChartViewport>
       </CardContent>
     </Card>
   );
