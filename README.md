@@ -42,3 +42,7 @@ npx convex env set CLERK_JWT_ISSUER_DOMAIN "https://…" --prod
 ```
 
 Register Clerk webhook: `<CONVEX_SITE_URL>/clerk-webhook`.
+
+## Database & file storage backups
+
+Full snapshots (tables + survey photos in Convex storage) live under `convex-backups/`. See [convex-backups/README.md](convex-backups/README.md) for export/import and dev→prod sync (`npm run convex:export:dev`, `npm run convex:import:prod`, etc.).

@@ -33,6 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# convex backup extracts (keep .zip locally if needed)
+convex-backups/_inspect/
+convex-backups/*.zip
+
 # vercel
 .vercel
 
