@@ -273,7 +273,6 @@ export default function SurveyDetailPage({ params }: { params: Promise<{ id: str
                     <Field label="Water Source" value={survey.waterSource} />
                     <Field label="Sanitation Type" value={survey.sanitationType} />
                     <Field label="Waste Collection" value={survey.municipalWasteCollection ? "Yes" : "No"} />
-                    <Field label="Electricity No" value={survey.electricityNo} />
                   </Grid>
                 </CardContent>
               </Card>

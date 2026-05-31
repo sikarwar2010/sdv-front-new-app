@@ -4,16 +4,12 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { RoleGate } from "@/components/shared/role-gate";
 import { QcStatusBadge, SurveyStatusBadge } from "@/components/shared/status-badge";
-import { FloorsEditor } from "@/components/surveys/floors-editor";
-import { GpsCapturePanel } from "@/components/surveys/gps-capture";
-import { PhotoUploader } from "@/components/surveys/photo-uploader";
-import { SurveyForm } from "@/components/surveys/survey-form";
+import { SurveyEditor } from "@/components/surveys/survey-editor";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSubmitSurvey, useSurvey } from "@/hooks/surveys/useSurveys";
 import { parseConvexError } from "@/lib/errors";
-import { ArrowLeft, Eye, Send } from "lucide-react";
+import { ArrowLeft, Eye } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -70,7 +66,7 @@ export default function SurveyEditPage({ params }: { params: Promise<{ id: strin
 
         <PageHeader
           title={`Edit — ${survey.propertyId || `Parcel ${survey.parcelNo}`}`}
-          description={`${survey.city} · Ward ${survey.wardNo} · Save each section, then add floors, photos and GPS before submitting.`}
+          description={`${survey.city} · Ward ${survey.wardNo} · Use the tabs below to complete all sections before submitting.`}
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <SurveyStatusBadge status={survey.status} />
@@ -80,13 +76,6 @@ export default function SurveyEditPage({ params }: { params: Promise<{ id: strin
                   <Eye className="h-4 w-4" /> View detail
                 </Link>
               </Button>
-              {canSubmit && !locked && (
-                <RoleGate capability="surveys.submit">
-                  <Button size="sm" disabled={submitting} onClick={onSubmit}>
-                    <Send className="h-4 w-4" /> {submitting ? "Submitting…" : "Submit for QC"}
-                  </Button>
-                </RoleGate>
-              )}
             </div>
           }
         />
@@ -102,39 +91,14 @@ export default function SurveyEditPage({ params }: { params: Promise<{ id: strin
             }
           />
         ) : (
-          <div className="space-y-5">
-            <SurveyForm localId={survey.localId} existing={survey} />
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Floors</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FloorsEditor surveyId={id} />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Photos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PhotoUploader surveyId={id} />
-              </CardContent>
-            </Card>
-
-            <GpsCapturePanel surveyId={id} gps={survey.gps} />
-
-            {canSubmit && (
-              <RoleGate capability="surveys.submit">
-                <div className="flex justify-end border-t border-border pt-5">
-                  <Button disabled={submitting} onClick={onSubmit}>
-                    <Send className="h-4 w-4" /> {submitting ? "Submitting…" : "Submit for QC"}
-                  </Button>
-                </div>
-              </RoleGate>
-            )}
-          </div>
+          <SurveyEditor
+            localId={survey.localId}
+            surveyId={id}
+            existing={survey}
+            showSubmitBar={canSubmit}
+            onSubmit={onSubmit}
+            submitting={submitting}
+          />
         )}
       </div>
     </RoleGate>

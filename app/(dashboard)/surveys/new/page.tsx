@@ -3,7 +3,7 @@
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { RoleGate } from "@/components/shared/role-gate";
-import { SurveyForm } from "@/components/surveys/survey-form";
+import { SurveyEditor } from "@/components/surveys/survey-editor";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -18,6 +18,7 @@ function newLocalId() {
 export default function NewSurveyPage() {
   const router = useRouter();
   const [localId] = useState(newLocalId);
+  const [surveyId, setSurveyId] = useState<string | undefined>();
 
   return (
     <RoleGate
@@ -32,9 +33,16 @@ export default function NewSurveyPage() {
         </Button>
         <PageHeader
           title="New Survey"
-          description="Fill the property details and save a draft. Floors, photos and GPS are added after the first save."
+          description="Complete each tab — property details, area, photos and GPS — then submit for QC."
         />
-        <SurveyForm localId={localId} onSaved={(id) => router.push(`/surveys/${id}/edit`)} />
+        <SurveyEditor
+          localId={localId}
+          surveyId={surveyId}
+          onSaved={(id) => {
+            setSurveyId(id);
+            router.replace(`/surveys/${id}/edit`);
+          }}
+        />
       </div>
     </RoleGate>
   );

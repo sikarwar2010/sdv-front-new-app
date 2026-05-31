@@ -2,35 +2,69 @@
 
 import { KpiCard } from "@/components/shared/kpi-card";
 import { PageHeader } from "@/components/shared/page-header";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { SurveyFilters, type FilterState } from "@/components/surveys/survey-filters";
 import { SurveyTable } from "@/components/surveys/survey-tables";
-import { searchSurveys, useSurveyList } from "@/hooks/surveys/useSurveys";
+import { searchSurveys, useSurveyList, useSurveyListPaginated } from "@/hooks/surveys/useSurveys";
 import { useMemo, useState } from "react";
 
 export default function QcQueuePage() {
   const [filters, setFilters] = useState<FilterState>({ search: "" });
+  const [pageSize, setPageSize] = useState(20);
 
-  // QC works the "submitted + pending QC" queue by default.
-  const pending = useSurveyList({
+  const pendingCount = useSurveyList({
     status: "submitted",
     qcStatus: "pending",
     wardNo: filters.wardNo,
     districtId: filters.districtId,
     municipalityId: filters.municipalityId,
+    limit: 200,
   });
+
+  const {
+    surveys,
+    isLoading,
+    pageNumber,
+    pageSize: rowsPerPage,
+    canGoPrev,
+    canGoNext,
+    goNext,
+    goPrev,
+  } = useSurveyListPaginated(
+    {
+      status: "submitted",
+      qcStatus: "pending",
+      wardNo: filters.wardNo,
+      districtId: filters.districtId,
+      municipalityId: filters.municipalityId,
+    },
+    pageSize,
+  );
+
   const filtered = useMemo(
-    () => (pending ? searchSurveys(pending as any, filters.search) : pending),
-    [pending, filters.search],
+    () => (surveys ? searchSurveys(surveys as any, filters.search) : surveys),
+    [surveys, filters.search],
   );
 
   return (
     <div className="space-y-5">
       <PageHeader title="Quality Control" description="Surveys submitted and awaiting your review." />
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:max-w-md">
-        <KpiCard label="Pending QC" value={pending?.length ?? "…"} tone="warning" />
+        <KpiCard label="Pending QC" value={pendingCount?.length ?? "…"} tone="warning" />
       </div>
       <SurveyFilters value={filters} onChange={setFilters} showStatus={false} showQcStatus={false} />
-      <SurveyTable rows={filtered as any} hrefBase="/qc" />
+      <SurveyTable rows={isLoading ? undefined : (filtered as any)} hrefBase="/qc" />
+      <TablePagination
+        pageNumber={pageNumber}
+        pageSize={rowsPerPage}
+        itemCount={filtered?.length ?? 0}
+        canGoPrev={canGoPrev}
+        canGoNext={canGoNext}
+        onPrev={goPrev}
+        onNext={goNext}
+        pageSizeOptions={[10, 20, 50]}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   );
 }

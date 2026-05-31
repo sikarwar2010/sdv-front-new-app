@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useMasters, useWardsForMunicipality } from "@/hooks/masters/useMasters";
 import { useSaveDraft } from "@/hooks/surveys/useSurveys";
 import { applyServerFieldErrors } from "@/lib/errors";
+import { formatPropertyId } from "@/lib/survey/area";
 import type { SurveyListItem } from "@/schema/surveys/index";
 import { surveyDraftSchema, type SurveyDraftValues } from "@/schema/surveys/surveySchema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -88,14 +89,23 @@ export function SurveyForm({
       waterSource: (existing?.waterSource as any) ?? undefined,
       sanitationType: (existing?.sanitationType as any) ?? undefined,
       municipalWasteCollection: existing?.municipalWasteCollection ?? false,
-      electricityNo: existing?.electricityNo ?? "",
     } as Partial<SurveyDraftValues> as SurveyDraftValues,
   });
 
   const muniId = watch("municipalityId");
   const wards = useWardsForMunicipality(muniId);
   const propertyUse = watch("propertyUse");
+  const wardNo = watch("wardNo");
+  const parcelNo = watch("parcelNo");
   const subcats = propertyUse ? (masters?.propertyUseSubcategories?.[propertyUse] ?? []) : [];
+  const selectedUlb = (masters?.ulbs ?? []).find((m: { _id: string }) => m._id === muniId);
+  const previewPropertyId =
+    formatPropertyId({
+      ulbCode: selectedUlb?.code ?? "",
+      wardNo: wardNo ?? "",
+      parcelNo: parcelNo ?? "",
+      propertyUse: propertyUse ?? "",
+    }) ?? existing?.propertyId;
 
   async function onSubmit(values: SurveyDraftValues) {
     try {
@@ -150,9 +160,17 @@ export function SurveyForm({
           )}
           <FieldErr msg={errors.wardNo?.message} />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 sm:col-span-2">
           <Label>Property ID</Label>
-          <Input {...register("propertyId")} />
+          <Input
+            readOnly
+            value={previewPropertyId ?? ""}
+            placeholder="Auto-generated after ward, parcel & property use"
+            className="font-mono bg-muted/50"
+          />
+          <p className="text-xs text-muted-foreground">
+            Format: ULB (6 digits) – Ward (3 digits) – Parcel (5 digits) – Use code, e.g. 800828-001-00001-P
+          </p>
         </div>
         <div className="space-y-1.5">
           <Label>Parcel No</Label>
@@ -271,15 +289,6 @@ export function SurveyForm({
           {sel("taxRateZone", masters?.taxRateZones ?? [], "Select")}
           <FieldErr msg={errors.taxRateZone?.message} />
         </div>
-        <div className="space-y-1.5">
-          <Label>Plot (sqft)</Label>
-          <Input type="number" {...register("plotSqft", { valueAsNumber: true })} />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Plinth (sqft)</Label>
-          <Input type="number" {...register("plinthSqft", { valueAsNumber: true })} />
-          <FieldErr msg={errors.plinthSqft?.message} />
-        </div>
       </Section>
 
       <Section title="Services">
@@ -308,10 +317,6 @@ export function SurveyForm({
             render={({ field }) => <Switch checked={!!field.value} onCheckedChange={field.onChange} />}
           />
           <Label>Door-to-door waste collection</Label>
-        </div>
-        <div className="space-y-1.5">
-          <Label>Electricity No</Label>
-          <Input {...register("electricityNo")} />
         </div>
       </Section>
 

@@ -36,7 +36,7 @@ export interface SurveyRow {
 const col = createColumnHelper<SurveyRow>();
 
 export function SurveyTable({ rows, hrefBase = "/surveys" }: { rows?: SurveyRow[]; hrefBase?: string }) {
-  const [sorting, setSorting] = useState<SortingState>([{ id: "_creationTime", desc: true }]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "propertyId", desc: false }]);
 
   const columns = useMemo(
     () => [
