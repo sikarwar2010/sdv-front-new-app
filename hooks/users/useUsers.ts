@@ -2,14 +2,58 @@
 
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { useCursorPagination } from "@/hooks/use-cursor-pagination";
 import { useMutation, useQuery } from "convex/react";
+import { useMemo } from "react";
 
 export function usePendingApprovals() {
   return useQuery(api.admin.listPendingApprovals);
 }
-export function useUserList(filters: { role?: any; status?: any } = {}) {
-  return useQuery(api.admin.listUsers, { role: filters.role, status: filters.status });
+
+export type UserListFilters = {
+  role?: "admin" | "supervisor" | "surveyor" | "pending";
+  status?: "pending_approval" | "active" | "disabled";
+};
+
+export function useUserListPaginated(filters: UserListFilters = {}, pageSize = 15) {
+  const resetKey = `${filters.role ?? ""}|${filters.status ?? ""}`;
+  const {
+    cursor,
+    pageIndex,
+    pageSize: size,
+    canGoPrev,
+    goNext,
+    goPrev,
+    pageNumber,
+  } = useCursorPagination(resetKey, pageSize);
+
+  const result = useQuery(api.admin.listUsers, {
+    paginationOpts: { numItems: size, cursor },
+    role: filters.role,
+    status: filters.status,
+  });
+
+  const users = result?.page;
+  const canGoNext = result ? !result.isDone : false;
+
+  return useMemo(
+    () => ({
+      users,
+      isLoading: result === undefined,
+      pageNumber,
+      pageIndex,
+      pageSize: size,
+      canGoPrev,
+      canGoNext,
+      goNext: () => {
+        if (result) goNext(result.continueCursor, result.isDone);
+      },
+      goPrev,
+    }),
+    [users, result, pageNumber, pageIndex, size, canGoPrev, canGoNext, goNext, goPrev],
+  );
 }
+
 export function useApproveUser() {
   return useMutation(api.admin.approveUser);
 }

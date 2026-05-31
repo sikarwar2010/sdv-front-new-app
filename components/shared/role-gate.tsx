@@ -1,6 +1,6 @@
 "use client";
 
-import { can, canAny, type Capability } from "@/lib/permissions";
+import { canAnyWithCapabilities, canWithCapabilities, type Capability } from "@/lib/permissions";
 import { useCurrentUser } from "@/lib/session";
 
 /**
@@ -20,7 +20,11 @@ export function RoleGate({
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }) {
-  const { role } = useCurrentUser();
-  const allowed = capability ? can(role, capability) : anyOf ? canAny(role, anyOf) : false;
+  const { role, capabilities } = useCurrentUser();
+  const allowed = capability
+    ? canWithCapabilities(capabilities, role, capability)
+    : anyOf
+      ? canAnyWithCapabilities(capabilities, role, anyOf)
+      : false;
   return <>{allowed ? children : fallback}</>;
 }

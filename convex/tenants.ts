@@ -12,6 +12,7 @@ import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { seedAreaMasters } from "./areaMasters";
 import { clientError, requireRole, requireUser, writeAudit } from "./helpers";
+import { seedSystemRbac } from "./rbac";
 import { ulbBodyType } from "./schema";
 import { seedServiceMasters } from "./serviceMasters";
 import { seedTaxationMasters } from "./taxationMasters";
@@ -364,6 +365,52 @@ export const seedReferenceData = mutation({
       ulbs: UlbSeed[];
     }> = [
       {
+        code: "MTH",
+        name: "Mathura",
+        ulbs: [
+          {
+            code: "MTH-MC-001",
+            name: "Mathura Municipal Corporation",
+            bodyType: "municipal_council",
+            postalCode: "281001",
+            wards: [
+              { wardNo: "1", wardCode: "MTH-W01", name: "Krishna Nagar" },
+              { wardNo: "2", wardCode: "MTH-W02", name: "Janambhumi" },
+            ],
+          },
+          {
+            code: "MTH-TP-VRINDAVAN",
+            name: "Vrindavan Town Panchayat",
+            bodyType: "town_panchayat",
+            postalCode: "281121",
+            wards: [{ wardNo: "1", wardCode: "MTH-VRI-W01", name: "Vrindavan" }],
+          },
+        ],
+      },
+      {
+        code: "HTR",
+        name: "Hathras",
+        ulbs: [
+          {
+            code: "HTR-MC-001",
+            name: "Hathras Municipal Council",
+            bodyType: "municipal_council",
+            postalCode: "204101",
+            wards: [
+              { wardNo: "1", wardCode: "HTR-W01", name: "Sadar" },
+              { wardNo: "2", wardCode: "HTR-W02", name: "Mendu" },
+            ],
+          },
+          {
+            code: "HTR-TP-SASNI",
+            name: "Sasni Town Panchayat",
+            bodyType: "town_panchayat",
+            postalCode: "204216",
+            wards: [{ wardNo: "1", wardCode: "HTR-SAS-W01", name: "Sasni" }],
+          },
+        ],
+      },
+      {
         code: "AGR",
         name: "Agra",
         ulbs: [
@@ -543,6 +590,7 @@ export const seedReferenceData = mutation({
       }
     }
 
+    await seedSystemRbac(ctx);
     await seedTaxationMasters(ctx);
     await seedAreaMasters(ctx);
     await seedServiceMasters(ctx);

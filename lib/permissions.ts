@@ -15,7 +15,8 @@
  *   - survey edit/submit: surveyor (own) + supervisor/admin (scope)
  */
 
-export type Role = "pending" | "surveyor" | "supervisor" | "admin";
+/** Built-in roles; admin may add custom role keys via Convex `roles` table. */
+export type Role = "pending" | "surveyor" | "supervisor" | "admin" | (string & {});
 
 export type Capability =
   // user management (admin only)
@@ -23,6 +24,7 @@ export type Capability =
   | "users.disable"
   | "users.assignTenant"
   | "users.view"
+  | "roles.manage"
   // tenants / masters (admin only)
   | "tenants.manage"
   | "masters.manage"
@@ -65,6 +67,7 @@ const MATRIX: Record<Role, Capability[]> = {
     "users.disable",
     "users.assignTenant",
     "users.view",
+    "roles.manage",
     "tenants.manage",
     "masters.manage",
     "surveys.viewAll",
@@ -84,11 +87,53 @@ const MATRIX: Record<Role, Capability[]> = {
 
 export function can(role: Role | undefined, capability: Capability): boolean {
   if (!role) return false;
-  return MATRIX[role]?.includes(capability) ?? false;
+  return MATRIX[role as keyof typeof MATRIX]?.includes(capability) ?? false;
 }
 
 export function canAny(role: Role | undefined, capabilities: Capability[]): boolean {
   return capabilities.some((c) => can(role, c));
+}
+
+/** Prefer server capabilities from `users.currentUser` when available (dynamic RBAC). */
+export function canWithCapabilities(
+  serverCapabilities: string[] | undefined,
+  role: Role | undefined,
+  capability: Capability,
+): boolean {
+  if (serverCapabilities && serverCapabilities.length > 0) {
+    return serverCapabilities.includes(capability);
+  }
+  return can(role, capability);
+}
+
+export function canAnyWithCapabilities(
+  serverCapabilities: string[] | undefined,
+  role: Role | undefined,
+  capabilities: Capability[],
+): boolean {
+  return capabilities.some((c) => canWithCapabilities(serverCapabilities, role, c));
+}
+
+/** Nav keys from server capabilities (falls back to static NAV_VISIBILITY). */
+export function navKeysForUser(serverCapabilities: string[] | undefined, role: Role | undefined): string[] {
+  if (serverCapabilities && serverCapabilities.length > 0) {
+    const keys = new Set<string>();
+    if (serverCapabilities.some((c) => c.startsWith("analytics.") || c.startsWith("surveys."))) {
+      keys.add("dashboard");
+    }
+    if (serverCapabilities.some((c) => c.startsWith("surveys.") || c.startsWith("qc."))) {
+      keys.add("surveys");
+    }
+    if (serverCapabilities.some((c) => c.startsWith("qc."))) keys.add("qc");
+    if (serverCapabilities.some((c) => c.startsWith("users."))) keys.add("users");
+    if (serverCapabilities.includes("roles.manage")) keys.add("roles");
+    if (serverCapabilities.some((c) => c.startsWith("masters."))) keys.add("masters");
+    if (serverCapabilities.some((c) => c.startsWith("reports."))) keys.add("reports");
+    if (serverCapabilities.includes("audit.view")) keys.add("audit");
+    keys.add("settings");
+    return [...keys];
+  }
+  return NAV_VISIBILITY[role as keyof typeof NAV_VISIBILITY] ?? [];
 }
 
 /** Which nav sections a role may see. Keep in sync with components/layout/sidebar. */
@@ -96,5 +141,5 @@ export const NAV_VISIBILITY: Record<Role, string[]> = {
   pending: [],
   surveyor: ["dashboard", "surveys", "settings"],
   supervisor: ["dashboard", "surveys", "qc", "users", "reports", "settings"],
-  admin: ["dashboard", "surveys", "qc", "users", "masters", "reports", "audit", "settings"],
+  admin: ["dashboard", "surveys", "qc", "users", "roles", "masters", "reports", "audit", "settings"],
 };

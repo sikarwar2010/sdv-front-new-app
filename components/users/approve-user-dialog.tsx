@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useRoles } from "@/hooks/rbac/useRbac";
 import { useApproveUser, useTenantCatalog } from "@/hooks/users/useUsers";
 import { parseConvexError } from "@/lib/errors";
 import { useState } from "react";
@@ -28,6 +30,7 @@ export function ApproveUserDialog({
 }) {
   const approve = useApproveUser();
   const catalog = useTenantCatalog();
+  const roleCatalog = useRoles();
   const [role, setRole] = useState<string>("surveyor");
   const [municipalityId, setMunicipalityId] = useState<string>("");
   const [wards, setWards] = useState<string[]>([]);
@@ -44,7 +47,7 @@ export function ApproveUserDialog({
       await approve({
         userId: user!._id as any,
         role: role as any,
-        municipalityId: role !== "admin" && municipalityId ? (municipalityId as any) : undefined,
+        municipalityId: role !== "admin" && municipalityId ? (municipalityId as Id<"municipalities">) : undefined,
         wardAssignments: wards,
       });
       toast.success(`${user!.name} approved as ${role}`);
@@ -85,9 +88,13 @@ export function ApproveUserDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="surveyor">Surveyor</SelectItem>
-                <SelectItem value="supervisor">Supervisor</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                {(roleCatalog ?? [])
+                  .filter((r) => r.isActive && r.key !== "pending")
+                  .map((r) => (
+                    <SelectItem key={r.key} value={r.key}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

@@ -10,12 +10,14 @@ export type CurrentUser = {
   email: string;
   name: string;
   role: Role;
+  roleName?: string;
   status: "pending_approval" | "active" | "disabled";
   districtId?: string;
   municipalityId?: string;
   wardAssignments: string[];
   municipality: { code: string; name: string } | null;
   district: { code: string; name: string } | null;
+  capabilities?: string[];
 };
 
 export function useCurrentUser() {
@@ -37,6 +39,8 @@ export function useCurrentUser() {
   return {
     user: user ?? null,
     role: (user?.role ?? undefined) as Role | undefined,
+    capabilities: user?.capabilities,
+    roleName: user?.roleName,
     isLoading: user === undefined,
     isActive: user?.status === "active",
     isPending: user?.status === "pending_approval",

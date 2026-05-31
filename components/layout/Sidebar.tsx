@@ -1,6 +1,6 @@
 "use client";
 
-import { NAV_VISIBILITY, type Role } from "@/lib/permissions";
+import { navKeysForUser, type Role } from "@/lib/permissions";
 import { useCurrentUser } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import {
@@ -11,6 +11,7 @@ import {
   ScrollText,
   Settings,
   ShieldCheck,
+  ShieldEllipsis,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -21,6 +22,7 @@ const NAV: { key: string; href: string; label: string; icon: React.ElementType }
   { key: "surveys", href: "/surveys", label: "Surveys", icon: ClipboardList },
   { key: "qc", href: "/qc", label: "Quality Control", icon: ShieldCheck },
   { key: "users", href: "/users", label: "Users", icon: Users },
+  { key: "roles", href: "/roles", label: "Roles & Permissions", icon: ShieldEllipsis },
   { key: "masters", href: "/masters", label: "Master Data", icon: Database },
   { key: "reports", href: "/reports", label: "Reports", icon: FileBarChart },
   { key: "audit", href: "/audit", label: "Audit Log", icon: ScrollText },
@@ -29,8 +31,8 @@ const NAV: { key: string; href: string; label: string; icon: React.ElementType }
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { role } = useCurrentUser();
-  const visible = NAV_VISIBILITY[(role ?? "pending") as Role] ?? [];
+  const { role, capabilities } = useCurrentUser();
+  const visible = navKeysForUser(capabilities, (role ?? "pending") as Role);
   const items = NAV.filter((n) => visible.includes(n.key));
 
   return (
