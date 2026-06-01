@@ -27,7 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   });
 
   return (
-    <ClerkProvider>
+    <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" afterSignOutUrl="/sign-in">
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         <QueryClientProvider client={queryClient}>
           <div className="flex h-full min-h-0 flex-col overflow-hidden">

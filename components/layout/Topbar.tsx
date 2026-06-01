@@ -9,11 +9,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMarkAllRead, useMarkRead, useNotifications, useUnreadCount } from "@/hooks/masters/useNotifications";
-import { USER_ROLE_LABEL } from "@/lib/domain";
+import { USER_ROLE_LABEL, type UserRole } from "@/lib/domain";
+import type { Role } from "@/lib/permissions";
 import { useCurrentUser } from "@/lib/session";
 import { fmtDate } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
 import { Bell, Check } from "lucide-react";
+
+function roleLabel(role: Role | undefined): string {
+  if (!role) return "";
+  return USER_ROLE_LABEL[role as UserRole] ?? role;
+}
 
 export function Topbar() {
   const { user, role } = useCurrentUser();
@@ -27,7 +33,7 @@ export function Topbar() {
       <div className="min-w-0">
         <p className="truncate text-sm font-medium text-foreground">{user?.name ?? "…"}</p>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {role && <Badge variant="outline">{USER_ROLE_LABEL[role] ?? role}</Badge>}
+          {role && <Badge variant="outline">{roleLabel(role)}</Badge>}
           {user?.municipality?.name && <span className="truncate">{user.municipality.name}</span>}
           {user?.district?.name && <span className="truncate">· {user.district.name}</span>}
         </div>

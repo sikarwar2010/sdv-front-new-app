@@ -3,9 +3,11 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { useCurrentUser } from "@/lib/session";
-import { RedirectToSignIn } from "@clerk/nextjs";
-import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { useAuth } from "@clerk/nextjs";
+import { Authenticated, AuthLoading } from "convex/react";
 import { Clock, Loader2, ShieldX } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 function AccountGate({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isPending, isDisabled } = useCurrentUser();
@@ -75,17 +77,33 @@ function StatusScreen({
   );
 }
 
+function AuthSpinner() {
+  return (
+    <div className="flex min-h-0 flex-1 items-center justify-center">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.replace("/sign-in");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn) {
+    return <AuthSpinner />;
+  }
+
   return (
     <>
       <AuthLoading>
-        <div className="flex min-h-0 flex-1 items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <AuthSpinner />
       </AuthLoading>
-      <Unauthenticated>
-        <RedirectToSignIn />
-      </Unauthenticated>
       <Authenticated>
         <AccountGate>{children}</AccountGate>
       </Authenticated>
