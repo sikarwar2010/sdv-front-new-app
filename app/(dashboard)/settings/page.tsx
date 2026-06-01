@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { USER_ROLE_LABEL, USER_STATUS_LABEL, type UserStatus } from "@/lib/domain";
+import { USER_ROLE_LABEL, USER_STATUS_LABEL, type UserRole, type UserStatus } from "@/lib/domain";
 import type { Role } from "@/lib/permissions";
 import { useCurrentUser } from "@/lib/session";
 import type { ReactNode } from "react";
@@ -26,7 +26,7 @@ function statusBadgeVariant(status: UserStatus): "default" | "secondary" | "dest
 
 function roleLabel(role: Role | undefined): string {
   if (!role) return "—";
-  return USER_ROLE_LABEL[role] ?? role;
+  return USER_ROLE_LABEL[role as UserRole] ?? role;
 }
 
 export default function SettingsPage() {
