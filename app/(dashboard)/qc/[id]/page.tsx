@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { QcStatusBadge, SurveyStatusBadge } from "@/components/shared/status-badge";
 import { PhotoGallery } from "@/components/surveys/photo-gallery";
+import { PropertyIdTableCell, PropertyIdTableHead } from "@/components/surveys/property-id-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -90,6 +91,7 @@ export default function QcReviewPage({ params }: { params: Promise<{ id: string 
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <PropertyIdTableHead />
                       <TableHead>Floor</TableHead>
                       <TableHead>Usage</TableHead>
                       <TableHead>Construction</TableHead>
@@ -99,6 +101,7 @@ export default function QcReviewPage({ params }: { params: Promise<{ id: string 
                   <TableBody>
                     {survey.floors.map((f: any) => (
                       <TableRow key={f._id}>
+                        <PropertyIdTableCell propertyId={survey.propertyId} />
                         <TableCell className="capitalize">{f.floorName}</TableCell>
                         <TableCell className="capitalize">{f.usageType}</TableCell>
                         <TableCell className="capitalize">{f.constructionType}</TableCell>

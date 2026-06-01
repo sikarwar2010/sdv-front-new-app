@@ -1,6 +1,7 @@
 "use client";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { PropertyIdTableCell, PropertyIdTableHead } from "@/components/surveys/property-id-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -38,10 +39,12 @@ const newId = () => `flr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}
 
 function FloorTable({
   floors,
+  propertyId,
   onEdit,
   onRemove,
 }: {
   floors: FloorRow[];
+  propertyId?: string;
   onEdit: (f: FloorRow) => void;
   onRemove: (id: string) => void;
 }) {
@@ -53,6 +56,7 @@ function FloorTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <PropertyIdTableHead />
             <TableHead>#</TableHead>
             <TableHead>Floor</TableHead>
             <TableHead>Usage</TableHead>
@@ -64,6 +68,7 @@ function FloorTable({
         <TableBody>
           {floors.map((f) => (
             <TableRow key={f._id}>
+              <PropertyIdTableCell propertyId={propertyId} />
               <TableCell>{f.position}</TableCell>
               <TableCell className="capitalize">{f.floorName.replace(/_/g, " ")}</TableCell>
               <TableCell className="capitalize">{f.usageType.replace(/_/g, " ")}</TableCell>
@@ -214,6 +219,7 @@ export function FloorsEditor({
           ) : (
             <FloorTable
               floors={builtUpFloors}
+              propertyId={survey?.propertyId}
               onEdit={(f) => setDraft({ ...f, usageFactor: f.usageFactor })}
               onRemove={async (id) => {
                 try {
@@ -248,6 +254,7 @@ export function FloorsEditor({
           ) : (
             <FloorTable
               floors={openLandFloors}
+              propertyId={survey?.propertyId}
               onEdit={(f) => setDraft({ ...f, usageFactor: f.usageFactor })}
               onRemove={async (id) => {
                 try {

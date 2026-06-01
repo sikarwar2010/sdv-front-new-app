@@ -5,7 +5,9 @@ import { TableSkeleton } from "@/components/shared/loading";
 import { QcStatusBadge, SurveyStatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useMasters } from "@/hooks/masters/useMasters";
 import type { QcStatus, SurveyStatus } from "@/lib/domain";
+import { buildUlbCodeMap, resolveDisplayPropertyId } from "@/lib/survey/resolve-display-property-id";
 import { fmtDay } from "@/lib/utils";
 import {
   createColumnHelper,
@@ -23,6 +25,8 @@ export interface SurveyRow {
   _id: string;
   _creationTime: number;
   propertyId?: string;
+  municipalityId?: string;
+  propertyUse?: string;
   parcelNo: string;
   respondentName?: string;
   mobileNo: string;
@@ -36,13 +40,16 @@ export interface SurveyRow {
 const col = createColumnHelper<SurveyRow>();
 
 export function SurveyTable({ rows, hrefBase = "/surveys" }: { rows?: SurveyRow[]; hrefBase?: string }) {
+  const { masters } = useMasters();
+  const ulbCodes = useMemo(() => buildUlbCodeMap(masters?.ulbs), [masters?.ulbs]);
   const [sorting, setSorting] = useState<SortingState>([{ id: "propertyId", desc: false }]);
 
   const columns = useMemo(
     () => [
-      col.accessor("propertyId", {
+      col.accessor((row) => resolveDisplayPropertyId(row, ulbCodes) ?? "", {
+        id: "propertyId",
         header: "Property ID",
-        cell: (c) => <span className="font-mono text-xs">{c.getValue() || "—"}</span>,
+        cell: (c) => <span className="font-mono text-xs font-medium text-foreground">{c.getValue() || "—"}</span>,
       }),
       col.accessor("respondentName", {
         header: "Owner",
@@ -73,7 +80,7 @@ export function SurveyTable({ rows, hrefBase = "/surveys" }: { rows?: SurveyRow[
         ),
       }),
     ],
-    [hrefBase],
+    [hrefBase, ulbCodes],
   );
 
   const table = useReactTable({

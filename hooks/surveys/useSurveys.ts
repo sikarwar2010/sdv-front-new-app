@@ -8,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useCursorPagination } from "@/hooks/use-cursor-pagination";
 import type { QcStatus, SurveyStatus } from "@/lib/domain";
+import { resolveDisplayPropertyId, type PropertyIdSource } from "@/lib/survey/resolve-display-property-id";
 import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
 
@@ -106,19 +107,19 @@ export function useSetGps() {
  * search index later; the call site stays identical.
  */
 export function searchSurveys<
-  T extends {
-    propertyId?: string;
+  T extends PropertyIdSource & {
     respondentName?: string;
     mobileNo?: string;
     parcelNo?: string;
     owners?: { name?: string }[];
   },
->(rows: T[], term: string): T[] {
+>(rows: T[], term: string, ulbCodes?: Map<string, string>): T[] {
   const q = term.trim().toLowerCase();
   if (!q) return rows;
-  return rows.filter((r) =>
-    [r.propertyId, r.respondentName, r.mobileNo, r.parcelNo, ...(r.owners?.map((o) => o.name) ?? [])]
+  return rows.filter((r) => {
+    const displayId = resolveDisplayPropertyId(r, ulbCodes);
+    return [displayId, r.propertyId, r.respondentName, r.mobileNo, r.parcelNo, ...(r.owners?.map((o) => o.name) ?? [])]
       .filter(Boolean)
-      .some((v) => String(v).toLowerCase().includes(q)),
-  );
+      .some((v) => String(v).toLowerCase().includes(q));
+  });
 }

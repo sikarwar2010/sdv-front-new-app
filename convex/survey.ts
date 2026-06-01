@@ -1,7 +1,7 @@
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type QueryCtx } from "./_generated/server";
 import { addressTenantContext, normalizeAddressFields, validateAddressSection } from "./addressRules";
 import { presentFloorRow, validateAreaSection } from "./areaMasters";
 import { GPS_ACCEPT_MAX_ACCURACY_METERS, GPS_TARGET_ACCURACY_METERS } from "./gpsAccuracy";
@@ -12,6 +12,22 @@ import { gpsCapture, qcStatus, sanitationType, surveyOwnerEntry, surveyStatus, w
 import { validateServicesSection } from "./serviceMasters";
 import { validateTaxationSection } from "./taxationMasters";
 import { assertMunicipalityInScope, resolveTenantScope, tenantDistrictIds, tenantMunicipalityIds } from "./tenancy";
+
+async function loadMunicipalityCodes(
+  ctx: QueryCtx,
+  municipalityIds: Id<"municipalities">[],
+): Promise<Map<Id<"municipalities">, string>> {
+  const unique = [...new Set(municipalityIds)];
+  const munis = await Promise.all(unique.map((id) => ctx.db.get(id)));
+  return new Map(munis.filter((m): m is Doc<"municipalities"> => m != null).map((m) => [m._id, m.code] as const));
+}
+
+function enrichSurveyPropertyIds(rows: Doc<"surveys">[], codes: Map<Id<"municipalities">, string>): Doc<"surveys">[] {
+  return rows.map((row) => ({
+    ...row,
+    propertyId: resolvePropertyId(row, codes.get(row.municipalityId) ?? "") ?? row.propertyId,
+  }));
+}
 
 /* ────────────────────────── shared input validator ────────────────────────── */
 
@@ -231,7 +247,11 @@ export const list = query({
       rows = rows.filter((r) => r.wardNo === args.wardNo);
     }
     rows.sort((a, b) => comparePropertyIds(a.propertyId, b.propertyId));
-    return rows;
+    const codes = await loadMunicipalityCodes(
+      ctx,
+      rows.map((r) => r.municipalityId),
+    );
+    return enrichSurveyPropertyIds(rows, codes);
   },
 });
 
@@ -323,7 +343,11 @@ export const listPaginated = query({
 
     const page = await baseQuery.paginate(args.paginationOpts);
     const filtered = applySurveyListFilters(page.page, args, me, muniIds);
-    return { ...page, page: filtered };
+    const codes = await loadMunicipalityCodes(
+      ctx,
+      filtered.map((r) => r.municipalityId),
+    );
+    return { ...page, page: enrichSurveyPropertyIds(filtered, codes) };
   },
 });
 
@@ -364,9 +388,11 @@ export const get = query({
     );
 
     const muni = await ctx.db.get(survey.municipalityId);
+    const propertyId = resolvePropertyId(survey, muni?.code ?? "") ?? survey.propertyId;
 
     return {
       ...survey,
+      propertyId,
       districtId: muni?.districtId ?? survey.districtId,
       floors,
       photos: hydratedPhotos,
